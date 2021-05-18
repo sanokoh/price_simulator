@@ -18,64 +18,76 @@
 		<hr>
 		<form action="">
 			<div class="row">
-				<div class="col-4">
+				<div class="col-12">
 					<h2> Ziusプランを選択 </h2>
 					<div v-for="(value, index) in monthly_cost.zius">
-						<input type="radio" name="select_plan" v-bind:id="value.plan" v-bind:value="value.price"
-							v-model="selected.monthly.プラン" v-on:change="set_ssl()" v-bind:key="value.plan">
-						<label v-bind:for="value.plan">{{value.plan}}</label>
-					</div>
-				</div>
-				<div class="col-4">
-					<h2> サーバープランを選択 </h2>
-					<div v-for="(value, index) in monthly_cost.server">
-						<input type="radio" name="select_server" v-bind:id="value.plan" v-bind:value="value.price"
-							v-model="selected.monthly.サーバー" v-bind:key="value.plan">
-						<label v-bind:for="value.plan">{{value.plan}}</label>
-					</div>
-				</div>
-				<div class="col-4">
-
-					<h2> SSLを選択 </h2>
-					<div v-if="selected.monthly.プラン==1100">
-						<input type="radio" name="select_ssl" id="ssl_plan" v-bind:value="monthly_cost.ssl[0].price"
-							v-model="selected.monthly.SSL">
-						<label for="ssl_plan">プリセキュアSSL</label>
-					</div>
-					<div v-else>
-						<p>※SSLは{{}}プランに含まれています</p>
-						<input type="radio" name="select_ssl" id="ssl_plan" v-bind:value="monthly_cost.ssl[1].price"
-							v-model="selected.monthly.SSL" hidden>
+						<p>
+							<input type="radio" name="select_plan" v-bind:id="value.plan" v-bind:value="value"
+								v-model="selected.monthly[0]" v-on:change="set_ssl()" v-bind:key="value.plan">
+							<label v-bind:for="value.plan">{{value.plan}}</label>
+						</p>
 					</div>
 				</div>
 				<hr>
 				<div class="col-12">
-					<h2>ドメインを選択</h2>
-					<div class="d-flex justify-content-center">
-						<div v-for="(value, index) in yearly_cost.domain" class="px-3">
-							<input type="radio" name="select_domain" v-bind:id="value.plan" v-bind:value="value.price"
-								v-model="selected.yearly.ドメイン" v-bind:key="value.plan">
+					<h2> サーバープランを選択 </h2>
+					<div v-for="(value, index) in monthly_cost.server">
+						<p>
+							<input type="radio" name="select_server" v-bind:id="value.plan" v-bind:value="value"
+								v-model="selected.monthly[1]" v-bind:key="value.plan">
 							<label v-bind:for="value.plan">{{value.plan}}</label>
-						</div>
+						</p>
+					</div>
+				</div>
+				<hr>
+				<div class="col-12">
+					<h2> SSLを選択 </h2>
+					<div v-if="selected.monthly[0].price==1100">
+						<p>
+							<input type="radio" name="select_ssl" id="ssl_plan" v-bind:value="monthly_cost.ssl[0].price"
+								checked>
+							<label for="ssl_plan">プリセキュアSSL</label>
+						</p>
+					</div>
+					<div v-else>
+						<p>※SSLは{{selected.monthly[0].plan}}に含まれています</p>
+						<input type="radio" name="select_ssl" id="ssl_plan" v-bind:value="monthly_cost.ssl[1].price"
+							v-model="selected.monthly.SSL" hidden>
+					</div>
+				</div>
+
+				<hr>
+
+				<div class="col-12">
+					<h2>ドメインを選択</h2>
+					<div v-for="(value, index) in yearly_cost.domain" class="px-3">
+						<p>
+							<input type="radio" name="select_domain" v-bind:id="value.plan" v-bind:value="value"
+								v-model="selected.yearly[0]" v-bind:key="value.plan">
+							<label v-bind:for="value.plan">{{value.plan}}</label>
+						</p>
 					</div>
 				</div>
 			</div>
 		</form>
+
 		<hr>
-		<div class="row align-items-center">
-			<div class="col-2 text-end">
-				<h3>月額費用</h3>
-			</div>
-			<div class="col-2 text-start">
-				<div v-for="(value, key, i) in selected.monthly">
-					<div v-show="value">
-						<p> {{key}}: {{ value }}円 </p>
+		<h3>シミュレーション結果</h3>
+		<div v-show="selected" class="row align-items-center">
+			<div class="text-center border">
+				<p>月額費用</p>
+				<div class="row">
+					<div v-for="(values, i) in selected.monthly" class="col-3">
+						<p class="fw-bold"> {{values.item}}: {{values.plan}}</p>
+						<p class="fs-3">{{values.price}}円</p>
+					</div>
+					<div class="col-3">
+						<p class="fw-bold">合計</p>
+						<p class="fs-3 text-primary" prop="monthly">{{monthly_sum}}円</p>
 					</div>
 				</div>
-				<p>合計 {{monthly_sum}}</p>
 			</div>
 			<div class="col-2 text-end">
-
 				<h3>初期費用</h3>
 			</div>
 			<div class="col-2 text-start">
@@ -88,73 +100,82 @@
 		</div>
 	</div>
 
-	</div>
 	<script src="https://unpkg.com/vue@3.0.11/dist/vue.global.js"></script>
 	<script>
 		Vue.createApp({
 			data() {
 				return {
+					//月額費用
 					monthly_cost: {
 						zius: [
-							{ plan: 'テンプレートプラン', price: 1100 },
-							{ plan: 'カスタマイズプラン', price: 4400 },
-							{ plan: 'オリジナル/ショッピングプラン', price: 6600 },
+							{ item: 'Zius', plan: 'テンプレートプラン', price: 1100 },
+							{ item: 'Zius', plan: 'カスタマイズプラン', price: 4400 },
+							{ item: 'Zius', plan: 'オリジナル/ショッピングプラン', price: 6600 },
 						],
 						server: [
-							{ plan: 'シンプル', price: 1320 },
-							{ plan: 'サポート', price: 2640 },
-							{ plan: 'セキュリティ', price: 7150 },
+							{ item: 'サーバー', plan: 'シンプル', price: 1320 },
+							{ item: 'サーバー', plan: 'サポート', price: 2640 },
+							{ item: 'サーバー', plan: 'セキュリティ', price: 7150 },
 						],
 						ssl: [
-							{ plan: 'プリセキュア', price: 880 },
-							{ plan: 'その他', price: 0 },
-						]
-						,
+							{ item: 'SSL', plan: 'プリセキュアSSL', price: 880 },
+							{ item: 'SSL', plan: '選択プランに含', price: 0 },
+						],
 					},
-					initCost: {
-						zius: 30000,
-						server: 0,
-					},
+					//初期費用
+					init_cost: [
+						{ plan: 'Zius', price: 30000 },
+						{ plan: 'サーバー', price: '0' },
+					],
+					//年間費用
 					yearly_cost: {
 						domain: [
-							{ plan: 'co.jp', price: 5170 },
-							{ plan: 'or.jp', price: 5170 },
-							{ plan: 'gr.jp', price: 5170 },
-							{ plan: 'ne.jp', price: 5170 },
-							{ plan: 'ac.jp', price: 5170 },
-							{ plan: 'com', price: 1650 },
-							{ plan: 'net', price: 1650 },
-							{ plan: 'biz', price: 1650 },
-							{ plan: 'org', price: 1650 },
-							{ plan: 'info', price: 1650 },
-							{ plan: 'jp', price: 4180 }
+							{ item: 'ドメイン', plan: 'co.jp, or.jp, gr.jp, ne.jp, ac.jp', price: 5170 },
+							{ item: 'ドメイン', plan: 'com, net, biz, org, info', price: 1650 },
+							{ item: 'ドメイン', plan: 'jp', price: 4180 }
+							//plan A: co.jp,or.jp, gr.jp, ne.jp, ac.jp
+							//plan B: com, net, biz, org, info
+							//plan C: jp
 						]
 					},
+					//選択した項目を追加していくオブジェクト。下記は初期値として入力。
 					selected: {
-						monthly: { 'プラン': 1100, 'サーバー': 1320, 'SSL': 880 },
-						yearly: { 'ドメイン': '5170' },
-						initial: { 'Zius初期費用': 30000, 'サーバー初期費用': '0' },
-						total: 0,
+						monthly: [
+							{ item: 'Zius', plan: 'テンプレートプラン', price: 1100 },
+							{ item: 'サーバー', plan: 'シンプル', price: 1320 },
+							{ item: 'SSL', plan: 'プリセキュアSSL', price: 880 },
+						],
+						yearly: [
+							{ item: 'ドメイン', plan: 'co.jp, or.jp, gr.jp, ne.jp, ac.jp', price: 5170 },
+						],
+						initial: [
+							{ item: 'Zius初期費用', price: 30000 },
+							{ item: 'サーバー初期費用', price: 0 },
+						],
 					},
 				}
 			},
 			methods: {
+				//sslはテンプレートプランのみなので、それ以外が選択された場合はsslを0円にセット
 				set_ssl() {
-					if (this.selected.monthly.プラン !== 1100) {
-						this.selected.monthly.SSL = 0
+					if (this.selected.monthly[0].price !== 1100) {
+						this.selected.monthly[2].price = 0;
+						this.selected.monthly[2].plan = '選択プランに含まれています';
 					} else {
-						this.selected.monthly.SSL = 880
+						this.selected.monthly[2].price = 880;
+						this.selected.monthly[2].plan = 'プリセキュアSSL';
 					};
-				}
+				},
 			},
 			computed: {
+				//月額費用合計
 				monthly_sum() {
 					let sum = 0;
-					for (key in this.selected.monthly) {
-						sum += this.selected.monthly[key];
-					}
+					for (let elem of this.selected.monthly) {
+						sum += elem.price;
+					};
 					return sum;
-				}
+				},
 			},
 		}).mount('#pricingCalculator');
 
